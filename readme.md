@@ -1,115 +1,57 @@
-# FullstackPlate 🚀
+# Pager Duty Dashboard
 
-A **Dockerized full-stack boilerplate** with **React (Vite)** frontend and **Express (Node.js)** backend. Both apps have **hot reload** enabled inside Docker.
+Pager Duty Dashboard is a full-stack boilerplate built with **React (Vite)** on the frontend and **Express.js** on the backend.  
+It provides a foundation for building real-time operational dashboards, integrating with incident management tools like **PagerDuty** to track, visualize, and manage system reliability.
 
----
+## 🚀 Features
+
+- ⚡️ **React + Vite Frontend** – Fast development with hot reload and modern tooling.
+- 🛠 **Express.js Backend** – Simple, scalable API layer ready for integrations.
+- 🔄 **Frontend ↔ Backend Proxy** – Simplified API calls during development.
+- 🐳 **Dockerized Setup** – Consistent environment with Docker Compose.
+- 🔔 **PagerDuty Integration (Planned)** – Fetch incidents, trigger alerts, and manage on-call rotations.
+- 📊 **Future Extensions** – Post-incident management, analytics, and ops resilience metrics.
 
 ## 📂 Project Structure
 
 ```
-project-root/
-  docker-compose.yml
-  frontend/           # React + Vite app
-  backend/            # Express backend app
+
+pager-duty-dashboard/
+├── backend/       # Express.js backend
+├── frontend/      # React (Vite) frontend
+├── docker-compose.yml
+└── README.md
+
 ```
 
----
+## 🏗 Getting Started
 
-## 🔥 Features
-
-- ⚡ **Frontend**: React + Vite (HMR enabled)
-- 🖥️ **Backend**: Express with Nodemon (auto restart on save)
-- 🐳 **Dockerized**: Ready to run with `docker-compose`
-- 🎯 **Hot Reload**: Works seamlessly in both frontend & backend
-- 🔐 Modern Node.js runtime (22 LTS)
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the repo
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/anandrajendran121991/fullstackplate.git
-cd fullstackplate
+git clone https://github.com/anandrajendran121991/pager-duty-dashboard.git
 ```
 
-### 2. Start the stack
+### 2. Start with Docker
 
 ```bash
 docker-compose up --build
 ```
 
-### 3. Access apps
+- Frontend: [http://localhost:5175](http://localhost:5175)
+- Backend: [http://localhost:3000](http://localhost:3000)
 
-- Frontend → [http://localhost:5175](http://localhost:5175)
-- Backend → [http://localhost:5001](http://localhost:5001)
+### 3. Hot Reload
 
----
-
-## 🛠 Development
-
-### Frontend (React + Vite)
-
-- Source in `react-frontend/`
-- Auto reloads browser on changes
-- Default port: **5175**
-
-### Backend (Express)
-
-- Source in `express-backend/`
-- Auto restarts with Nodemon on changes
-- Default port: **5001**
+- Frontend uses **Vite HMR** (auto-reload on save).
+- Backend uses **Nodemon** (auto-restart server on changes).
 
 ---
 
-## 🔗 Frontend → Backend Proxy
+## 🔮 Roadmap
 
-We use **Vite’s dev server proxy** to forward API requests to the backend.
-This avoids CORS issues and keeps API calls simple.
-
-- Frontend calls `/api/...`
-- Vite proxies to backend service (`express-backend:3000` in docker-compose)
-
-Example:
-
-```js
-// frontend
-fetch("/api/hello").then((res) => res.json());
-```
-
-```js
-// backend
-app.get("/api/hello", (req, res) => {
-  res.json({ message: "Hello from Express Backend 🚀" });
-});
-```
-
----
-
-## ⚙️ Commands
-
-### Start containers
-
-```bash
-docker-compose up
-```
-
-### Rebuild containers
-
-```bash
-docker-compose build --no-cache
-```
-
-### Stop containers
-
-```bash
-docker-compose down
-```
-
----
-
-## 📌 Next Steps
-
-- Develop frontend features and backend features
-- Add **tests** (Jest for backend, Vitest for frontend)
+- ✅ Basic React + Express setup
+- ✅ Dockerized local development
+- 🔲 PagerDuty API integration (list & create incidents)
+- 🔲 Post-incident analysis workflows
+- 🔲 Resilience metrics & reporting
