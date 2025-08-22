@@ -20,3 +20,19 @@ services:
       - ./backend:/app
       - /app/node_modules
     command: ["npm", "run", "dev"]
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/pagerduty
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

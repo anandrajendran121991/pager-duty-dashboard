@@ -19,7 +19,9 @@ app.get("/api", (req, res) => {
   res.json({ message: "The application is up and running!" });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Backend running at http://localhost:${PORT}`);
+app.use("/api/*", (req, res) => {
+  res.status(404).json({ error: "Route not found" });
 });
+
+// Start server
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

@@ -28,4 +28,3 @@ export const pagerdutyService = {
     return res.data;
   },
 };
-
