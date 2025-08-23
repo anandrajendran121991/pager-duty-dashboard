@@ -4,7 +4,18 @@ import { connectDB } from "../config/database.js";
 export const getAllIncidents = async (req, res) => {
   try {
     const db = await connectDB();
-    const incidents = await db.collection("incidents").find({}).toArray(); // fetch all docs
+    const searchTerm = req.query.searchTerm || "";
+    const sortBy = req.query.sortBy || "created_at"; // default sort
+    const order = req.query.order === "asc" ? 1 : -1; // MongoDB uses 1 for ASC, -1 for DESC
+    const query = searchTerm
+      ? { title: { $regex: searchTerm, $options: "i" } }
+      : {};
+
+    const incidents = await db
+      .collection("incidents")
+      .find(query)
+      .sort({ [sortBy]: order })
+      .toArray(); // fetch all docs
     res.json({ count: incidents.length, incidents });
   } catch (error) {
     console.error("Error fetching incidents:", error);

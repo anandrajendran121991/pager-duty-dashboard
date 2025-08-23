@@ -2,84 +2,121 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function IncidentsTable() {
-  const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [incidents, setIncidents] = useState([]);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [order, setOrder] = useState("desc");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchIncidents = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("http://localhost:5001/api/incidents");
-        if (!response.ok) throw new Error("Failed to fetch incidents");
-        const jsonData = await response.json();
-        setIncidents(jsonData.incidents || []);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-    fetchIncidents();
-  }, []);
-
-  const handleCreate = () => {
-    navigate("/create");
-  };
-
-  const handleSearch = async () => {
+  const fetchIncidents = async () => {
     try {
-      setLoading(true);
+      setIsFetching(true);
       const response = await fetch(
-        `http://localhost:5001/api/incidents/query?${searchTerm}`
+        `http://localhost:5001/api/incidents?searchTerm=${searchTerm}&sortBy=${sortBy}&order=${order}`
       );
-
-      if (!response) {
-        setError("failed to fetch incidents");
-        return;
-      }
-
+      if (!response.ok) throw new Error("Failed to fetch incidents");
       const jsonData = await response.json();
       setIncidents(jsonData.incidents || []);
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setIsFetching(false);
     }
   };
 
-  if (loading) return <div>please wait...</div>;
+  useEffect(() => {
+    fetchIncidents();
+  }, [sortBy, order]);
+
+  const handleCreate = () => {
+    navigate("/create");
+  };
+
+  const handleSync = async () => {
+    try {
+      setIsSyncing(true);
+      const response = await fetch(`http://localhost:5001/api/incidents/sync`);
+      if (!response.ok) throw new Error("Failed to sync");
+      const result = await response.json();
+      console.log("Sync result:", result);
+      await fetchIncidents();
+      alert("Incidents synced successfully!");
+    } catch (err) {
+      console.error(err.message);
+      alert("Failed to sync incidents");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setOrder(order === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setOrder("asc");
+    }
+  };
+
+  const handleSearch = async () => {
+    fetchIncidents();
+  };
+
+  if (isFetching) return <div>Loading incidents...</div>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <div>
       <h2>PagerDuty Incidents</h2>
-      <button onClick={handleCreate}>Create Incident</button>
-      <div>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button onClick={handleSearch}>Search</button>
+      <div
+        className="actions"
+        style={{ display: "flex", gap: "20px", marginBottom: "15px" }}
+      >
+        <div>
+          <button onClick={handleCreate}>Create Incident</button>
+        </div>
+        <div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button onClick={handleSearch}>Search</button>
+        </div>
+        <div>
+          <button onClick={handleSync} disabled={isSyncing}>
+            {isSyncing ? "Syncing..." : "Sync PagerDuty"}
+          </button>
+        </div>
       </div>
 
-      <table>
+      <table
+        border={1}
+        cellPadding="8"
+        style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}
+      >
         <thead>
           <tr>
             <th>ID</th>
             <th>Title</th>
             <th>Status</th>
             <th>Service</th>
-            <th>Created At</th>
+            <th
+              onClick={() => handleSort("created_at")}
+              style={{ cursor: "pointer" }}
+            >
+              Created At{" "}
+              {sortBy === "created_at" ? (order === "asc" ? "▲" : "▼") : ""}
+            </th>
           </tr>
         </thead>
         <tbody>
           {incidents.length === 0 ? (
             <tr>
-              <td>No incidents found</td>
+              <td colSpan={5}>No incidents found</td>
             </tr>
           ) : (
             incidents.map((incident) => (
