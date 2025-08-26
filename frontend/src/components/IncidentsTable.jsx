@@ -9,17 +9,21 @@ function IncidentsTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("created_at");
   const [order, setOrder] = useState("desc");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(2);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
   const fetchIncidents = async () => {
     try {
       setIsFetching(true);
       const response = await fetch(
-        `http://localhost:5001/api/incidents?searchTerm=${searchTerm}&sortBy=${sortBy}&order=${order}`
+        `http://localhost:5001/api/incidents?searchTerm=${searchTerm}&sortBy=${sortBy}&order=${order}&page=${page}&limit=${limit}`
       );
       if (!response.ok) throw new Error("Failed to fetch incidents");
       const jsonData = await response.json();
       setIncidents(jsonData.incidents || []);
+      setTotalPages(jsonData.totalPages);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -29,7 +33,7 @@ function IncidentsTable() {
 
   useEffect(() => {
     fetchIncidents();
-  }, [sortBy, order]);
+  }, [sortBy, order, page]);
 
   const handleCreate = () => {
     navigate("/create");
@@ -63,6 +67,14 @@ function IncidentsTable() {
 
   const handleSearch = async () => {
     fetchIncidents();
+  };
+
+  const handlePrev = () => {
+    if (page > 1) setPage(page - 1);
+  };
+
+  const handleNext = () => {
+    if (page < totalPages) setPage(page + 1);
   };
 
   if (isFetching) return <div>Loading incidents...</div>;
@@ -131,6 +143,17 @@ function IncidentsTable() {
           )}
         </tbody>
       </table>
+      <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
+        <button onClick={handlePrev} disabled={page === 1}>
+          Prev
+        </button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <button onClick={handleNext} disabled={page === totalPages}>
+          Next
+        </button>
+      </div>
     </div>
   );
 }

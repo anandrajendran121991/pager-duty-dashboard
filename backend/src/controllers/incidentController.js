@@ -10,13 +10,21 @@ export const getAllIncidents = async (req, res) => {
     const query = searchTerm
       ? { title: { $regex: searchTerm, $options: "i" } }
       : {};
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const totalRecords = await db.collection("incidents").countDocuments(query);
+    const totalPages = Math.ceil(totalRecords / limit);
 
     const incidents = await db
       .collection("incidents")
       .find(query)
+      .skip(skip)
+      .limit(limit)
       .sort({ [sortBy]: order })
       .toArray(); // fetch all docs
-    res.json({ count: incidents.length, incidents });
+    res.json({ totalPages: totalPages, incidents });
   } catch (error) {
     console.error("Error fetching incidents:", error);
     res.status(500).json({ error: error.message });
