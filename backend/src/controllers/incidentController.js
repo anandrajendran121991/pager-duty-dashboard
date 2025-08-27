@@ -1,5 +1,7 @@
 import { IncidentService } from "../services/incidentService.js";
 import { connectDB } from "../config/database.js";
+import { MongoClient, ObjectId } from "mongodb";
+import axios from "axios";
 
 export const getAllIncidents = async (req, res) => {
   try {
@@ -8,8 +10,17 @@ export const getAllIncidents = async (req, res) => {
     const sortBy = req.query.sortBy || "created_at"; // default sort
     const order = req.query.order === "asc" ? 1 : -1; // MongoDB uses 1 for ASC, -1 for DESC
     const query = searchTerm
-      ? { title: { $regex: searchTerm, $options: "i" } }
+      ? {
+          $or: [
+            { title: { $regex: searchTerm, $options: "i" } },
+            { id: { $regex: searchTerm, $options: "i" } },
+            { urgency: { $regex: searchTerm, $options: "i" } },
+            { date: { $regex: searchTerm, $options: "i" } }, // assuming date is a string
+            { status: { $regex: searchTerm, $options: "i" } },
+          ],
+        }
       : {};
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
@@ -89,5 +100,49 @@ export const syncIncidents = async (req, res) => {
   } catch (error) {
     console.error("Error syncing incidents:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const viewIncident = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = await connectDB();
+    const incident = await db
+      .collection("incidents")
+      .findOne({ _id: new ObjectId(id) });
+    if (!incident) {
+      return res.status(404).json({ message: "Incident not found" });
+    }
+    res.json({ incident: incident });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const analyze = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+      {
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 500,
+          temperature: 0.7,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.json({ analysis: response.data });
+  } catch (error) {
+    console.error("Hugging Face Error:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to analyze" });
   }
 };
