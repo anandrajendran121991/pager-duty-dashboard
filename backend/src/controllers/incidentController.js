@@ -120,18 +120,30 @@ export const viewIncident = async (req, res) => {
   }
 };
 
-export const analyze = async (req, res) => {
+export const analyzeWithFastApi = async (req, res) => {
   try {
     const { prompt } = req.body;
-
-    /**
-     * One way to fetch the locally running small model
-     */
     const fix = await suggestFix(prompt);
-    console.log(fix);
     res.json({ analysis: fix });
   } catch (error) {
     console.error("Error calling Python model API:", error.message);
+    res.status(500).json({ error: "Failed to generate response" });
+  }
+};
+
+export const analyzeWithInferenceApi = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    const response = await axios.post(
+      "http://host.docker.internal:8000/generate",
+      {
+        prompt,
+      }
+    );
+    res.json({ analysis: response.data.response });
+  } catch (error) {
+    console.error("Error calling Hugging Face local model:", error.message);
     res.status(500).json({ error: "Failed to generate response" });
   }
 };
