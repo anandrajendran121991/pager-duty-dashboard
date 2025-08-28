@@ -2,6 +2,7 @@ import { IncidentService } from "../services/incidentService.js";
 import { connectDB } from "../config/database.js";
 import { MongoClient, ObjectId } from "mongodb";
 import axios from "axios";
+import { suggestFix } from "../services/LLM.js";
 
 export const getAllIncidents = async (req, res) => {
   try {
@@ -123,26 +124,14 @@ export const analyze = async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    const response = await axios.post(
-      "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
-      {
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 500,
-          temperature: 0.7,
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    res.json({ analysis: response.data });
+    /**
+     * One way to fetch the locally running small model
+     */
+    const fix = await suggestFix(prompt);
+    console.log(fix);
+    res.json({ analysis: fix });
   } catch (error) {
-    console.error("Hugging Face Error:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to analyze" });
+    console.error("Error calling Python model API:", error.message);
+    res.status(500).json({ error: "Failed to generate response" });
   }
 };

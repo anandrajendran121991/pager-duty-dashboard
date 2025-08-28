@@ -112,7 +112,7 @@ Please provide a root cause analysis and recommendations.
               <h4 style={styles.subHeading}>Analysis Result:</h4>
               {analysis.map((item, index) => (
                 <p key={index} style={styles.resultText}>
-                  {item.summary_text}
+                  {item.generated_text}
                 </p>
               ))}
             </div>
