@@ -46,6 +46,10 @@ docker-compose up --build
 - Frontend uses **Vite HMR** (auto-reload on save).
 - Backend uses **Nodemon** (auto-restart server on changes).
 
+### 4. Run the LLM on host machine
+
+`python3 -m uvicorn model_api:app --host 127.0.0.1 --port 8000`
+
 ---
 
 ## 🔮 Roadmap

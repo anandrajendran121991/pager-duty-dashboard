@@ -110,10 +110,11 @@ Please provide a root cause analysis and recommendations.
           {analysis && (
             <div style={styles.analysisBox}>
               <h4 style={styles.subHeading}>Analysis Result:</h4>
-              {analysis.map((item, index) => (
-                <p key={index} style={styles.resultText}>
-                  {item.generated_text}
-                </p>
+              {Object.entries(analysis).map(([section, text], index) => (
+                <div key={index} style={{ marginBottom: "15px" }}>
+                  <h5 style={{ fontWeight: "bold" }}>{section}:</h5>
+                  <p style={styles.resultText}>{text}</p>
+                </div>
               ))}
             </div>
           )}

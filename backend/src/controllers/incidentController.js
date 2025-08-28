@@ -131,17 +131,18 @@ export const analyzeWithFastApi = async (req, res) => {
   }
 };
 
-export const analyzeWithInferenceApi = async (req, res) => {
+export const analyzeWithLocalLLM = async (req, res) => {
   try {
     const { prompt } = req.body;
 
     const response = await axios.post(
       "http://host.docker.internal:8000/generate",
-      {
-        prompt,
-      }
+      {},
+      { timeout: 600000 }
     );
-    res.json({ analysis: response.data.response });
+    console.log(response);
+
+    res.json({ analysis: response.data });
   } catch (error) {
     console.error("Error calling Hugging Face local model:", error.message);
     res.status(500).json({ error: "Failed to generate response" });
